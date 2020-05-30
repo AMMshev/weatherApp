@@ -9,16 +9,12 @@
 import Foundation
 
 struct Daily: Codable {
-    let dt, sunrise, sunset: Int
+    let dt, sunrise, sunset, windDeg: Int
     let temp: Temp
     let feelsLike: FeelsLike?
-    let pressure, humidity: Int?
-    let dewPoint, windSpeed: Double?
-    let windDeg: Int
+    let pressure, humidity, clouds: Int?
+    let dewPoint, windSpeed, uvi, rain: Double?
     let weather: [Weather]?
-    let clouds: Int?
-    let uvi: Double?
-    let rain: Double?
 
     enum CodingKeys: String, CodingKey {
         case dt, sunrise, sunset, temp, weather, clouds, uvi, rain, pressure, humidity

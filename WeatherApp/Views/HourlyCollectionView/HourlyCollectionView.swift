@@ -26,7 +26,7 @@ class HourlyCollectionView: UIView {
                                  height: 120.0))
         collectionView.register(HourlyForecastCollectionViewCell.self,
                                 forCellWithReuseIdentifier:
-            CellIdentifiers.dailyForecastCollection.rawValue)
+            CellIdentifiers.hourlyWeatherCell.rawValue)
         addSubview(collectionView)
         collectionView.layer.borderWidth = 0.5
         collectionView.layer.borderColor = UIColor.lightText.cgColor
@@ -47,7 +47,7 @@ extension HourlyCollectionView: UICollectionViewDelegate, UICollectionViewDataSo
     func collectionView(_ collectionView: UICollectionView,
                         cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier:
-            CellIdentifiers.dailyForecastCollection.rawValue, for: indexPath)
+            CellIdentifiers.hourlyWeatherCell.rawValue, for: indexPath)
             as? HourlyForecastCollectionViewCell else { return UICollectionViewCell() }
         let currentForecast = hourlyForecast[indexPath.item]
         cell.weatherStateCode = currentForecast.weather.first?.icon

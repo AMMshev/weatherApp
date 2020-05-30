@@ -8,6 +8,13 @@
 
 import UIKit
 
+extension ViewController {
+    enum SectionType {
+        case temperatureSection
+        case fullInfoSection
+    }
+}
+
 extension ViewController: UITableViewDelegate, UITableViewDataSource {
     func checkSavedData() {
         if weatherInfo == nil {
@@ -52,175 +59,130 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
         ])
     }
     func numberOfSections(in tableView: UITableView) -> Int {
-        2
+        sectionsArray.count
     }
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        if section == 1 {
-            return 140.0
-        } else {
+        switch sectionsArray[section] {
+        case .temperatureSection:
             return 0.0
+        case .fullInfoSection:
+            return 140.0
         }
     }
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        if section == 1 {
+        switch sectionsArray[section] {
+        case .temperatureSection:
+            return nil
+        case .fullInfoSection:
             guard let hourlyForecast = weatherInfo?.hourly else { return nil }
             return HourlyCollectionView(hourlyForecast: hourlyForecast)
-        } else {
-            return nil
         }
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 0 {
+        switch sectionsArray[section] {
+        case .temperatureSection:
             return 2
-        }
-        if section == 1 {
+        case .fullInfoSection:
             return (weatherInfo?.daily.count ?? 0) + 5
-        } else {
-            return 0
         }
     }
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell = UITableViewCell()
-        if indexPath.section == 0 {
+        switch sectionsArray[indexPath.section] {
+        case .temperatureSection:
             if indexPath.row == 0 {
-                if let temperatureCell =
-                    tableView.dequeueReusableCell(withIdentifier:
-                        CellIdentifiers.temperature.rawValue) as? TemperatureTableViewCell {
-                    temperatureCell.currentTemperature = Int(weatherInfo?.current.temp ?? 0.0)
-                    cell = temperatureCell
-                }
+                let model = TemperatureCellModel(currentTemperature: Int(weatherInfo?.current.temp ?? 0.0))
+                cell = tableView.dequeueReusableCell(withModel: model, for: indexPath)
             }
             if indexPath.row == 1 {
-                if let todayHighLowCell =
-                    tableView.dequeueReusableCell(withIdentifier:
-                        CellIdentifiers.todayHighLow.rawValue) as? TodayHighLowTempTableViewCell,
-                    let currentDate = ConvertationMethods.shared.dateFrom(unixDate: weatherInfo?.current.dt) {
-                    todayHighLowCell.dailyTemperature = Int(weatherInfo?.daily.first?.temp.day ?? 0.0)
-                    todayHighLowCell.nightTemperature = Int(weatherInfo?.daily.first?.temp.night ?? 0.0)
-                    todayHighLowCell.dayOfWeek = ConvertationMethods.shared.dayOfWeekFrom(date: currentDate)
-                    cell = todayHighLowCell
+                if let currentDate = ConvertationMethods.shared.dateFrom(unixDate: weatherInfo?.current.dt) {
+                    let model = TodayHighLowTempCellModel(dayOfWeek: ConvertationMethods.shared.dayOfWeekFrom(date: currentDate),
+                                                          dailyTemperature: Int(weatherInfo?.daily.first?.temp.day ?? 0.0),
+                                                          nightTemperature: Int(weatherInfo?.daily.first?.temp.night ?? 0.0))
+                    cell = tableView.dequeueReusableCell(withModel: model, for: indexPath)
                 }
             }
-        }
-        if indexPath.section == 1 {
+        case .fullInfoSection:
             let dailyCount = weatherInfo?.daily.count ?? 0
             if indexPath.row < dailyCount - 1 {
-                if let dailyCell = tableView.dequeueReusableCell(withIdentifier:
-                    CellIdentifiers.dailyForecast.rawValue) as? DailyForecastTableViewCell,
-                    let date = ConvertationMethods.shared.dateFrom(unixDate: weatherInfo?.daily[indexPath.row + 1].dt) {
-                    dailyCell.dayOfTheWeek = ConvertationMethods.shared.dayOfWeekFrom(date: date)
-                    dailyCell.dayTemperature = Int(weatherInfo?.daily[indexPath.row + 1].temp.day ?? 0.0)
-                    dailyCell.nightTemperature = Int(weatherInfo?.daily[indexPath.row + 1].temp.night ?? 0.0)
-                    dailyCell.conditionImageCode = weatherInfo?.daily[indexPath.row + 1].weather?.first?.icon
-                    cell = dailyCell
+                if let date = ConvertationMethods.shared.dateFrom(unixDate: weatherInfo?.daily[indexPath.row + 1].dt) {
+                    let model = DailyForecastCellModel(dayOfTheWeek: ConvertationMethods.shared.dayOfWeekFrom(date: date),
+                                                       dayTemperature: Int(weatherInfo?.daily[indexPath.row + 1].temp.day ?? 0.0),
+                                                       nightTemperature: Int(weatherInfo?.daily[indexPath.row + 1].temp.night ?? 0.0),
+                                                       conditionImageCode: weatherInfo?.daily[indexPath.row + 1].weather?.first?.icon)
+                    cell = tableView.dequeueReusableCell(withModel: model, for: indexPath)
                 }
             }
             if indexPath.row == dailyCount - 1 {
-                if let descriptionCell =
-                    tableView.dequeueReusableCell(withIdentifier:
-                        CellIdentifiers.description.rawValue)
-                        as? DescriptionTableViewCell {
-                    descriptionCell.textLabel?.text =
-                        "Today: \(weatherInfo?.current.weather.first?.weatherDescription ?? "")" +
-                        " currently. It's \(Int(weatherInfo?.current.temp ?? 0.0))°;" +
-                    "the high will be \(Int(weatherInfo?.daily.first?.temp.max ?? 0.0))°."
-                    cell = descriptionCell
-                }
+                let model = DescriptionCellModel(text: "Today: \(weatherInfo?.current.weather.first?.weatherDescription ?? "")" +
+                    " currently. It's \(Int(weatherInfo?.current.temp ?? 0.0))°;" +
+                "the high will be \(Int(weatherInfo?.daily.first?.temp.max ?? 0.0))°.")
+                cell = tableView.dequeueReusableCell(withModel: model, for: indexPath)
             }
             if indexPath.row == dailyCount {
-                if let additionalCell =
-                    tableView.dequeueReusableCell(withIdentifier:
-                        CellIdentifiers.additionalInfo.rawValue)
-                        as? AdditionalInfoTableViewCell,
-                    let sunriseDate = ConvertationMethods.shared.dateFrom(unixDate: weatherInfo?.current.sunrise),
+                if let sunriseDate = ConvertationMethods.shared.dateFrom(unixDate: weatherInfo?.current.sunrise),
                     let sunsetDate = ConvertationMethods.shared.dateFrom(unixDate: weatherInfo?.current.sunset) {
-                    additionalCell.leftLabelName = "SUNRISE"
-                    additionalCell.leftLabelVolume =
-                    "\(ConvertationMethods.shared.take(info: .hoursAndMinutes, from: sunriseDate))"
-                    additionalCell.rightLabelName = "SUNSET"
-                    additionalCell.rightLabelVolume =
-                    "\(ConvertationMethods.shared.take(info: .hoursAndMinutes, from: sunsetDate))"
-                    cell = additionalCell
+                    let model = AdditionalInfoCellModel(leftLabelName: "SUNRISE",
+                                                        leftLabelVolume: ConvertationMethods.shared.take(info: .hoursAndMinutes, from: sunriseDate),
+                                                        rightLabelName: "SUNSET",
+                                                        rightLabelVolume: ConvertationMethods.shared.take(info: .hoursAndMinutes, from: sunsetDate))
+                    cell = tableView.dequeueReusableCell(withModel: model, for: indexPath)
                 }
             }
             if indexPath.row == dailyCount + 1 {
-                if let additionalCell = tableView.dequeueReusableCell(withIdentifier:
-                    CellIdentifiers.additionalInfo.rawValue)
-                    as? AdditionalInfoTableViewCell {
-                    additionalCell.leftLabelName = "CHANCE OF RAIN"
-                    additionalCell.leftLabelVolume = "10 %"
-                    additionalCell.rightLabelName = "HUMIDITY"
-                    additionalCell.rightLabelVolume = "\(weatherInfo?.current.humidity ?? 0)" +
-                        " %".replacingOccurrences(of: ".", with: ",")
-                    cell = additionalCell
-                }
+                let model = AdditionalInfoCellModel(leftLabelName: "CHANCE OF RAIN",
+                                                    leftLabelVolume: "10 %",
+                                                    rightLabelName: "HUMIDITY",
+                                                    rightLabelVolume: "\(weatherInfo?.current.humidity ?? 0)" +
+                                                    " %".replacingOccurrences(of: ".", with: ","))
+                cell = tableView.dequeueReusableCell(withModel: model, for: indexPath)
             }
             if indexPath.row == dailyCount + 2 {
-                if let additionalCell =
-                    tableView.dequeueReusableCell(withIdentifier:
-                        CellIdentifiers.additionalInfo.rawValue)
-                        as? AdditionalInfoTableViewCell {
-                    additionalCell.leftLabelName = "WIND"
-                    additionalCell.leftLabelVolume =
-                        "\(ConvertationMethods.shared.convertDegreesToDirection(windDerection: weatherInfo?.current.windDeg ?? 0)) \(round((weatherInfo?.current.windSpeed ?? 0.0) * 100.0) / 100.0)" +
-                        " m/s".replacingOccurrences(of: ".", with: ",")
-                    additionalCell.rightLabelName = "FEELS LIKE"
-                    additionalCell.rightLabelVolume = "\(Int(weatherInfo?.current.feelsLike ?? 0.0))°"
-                    cell = additionalCell
-                }
+                    let model = AdditionalInfoCellModel(leftLabelName: "WIND",
+                                                        leftLabelVolume: "\(ConvertationMethods.shared.convertDegreesToDirection(windDerection: weatherInfo?.current.windDeg ?? 0)) \(round((weatherInfo?.current.windSpeed ?? 0.0) * 100.0) / 100.0)" +
+                                                        " m/s".replacingOccurrences(of: ".", with: ","),
+                                                        rightLabelName: "FEELS LIKE",
+                                                        rightLabelVolume: "\(Int(weatherInfo?.current.feelsLike ?? 0.0))°")
+                    cell = tableView.dequeueReusableCell(withModel: model, for: indexPath)
             }
             if indexPath.row == dailyCount + 3 {
-                if let additionalCell =
-                    tableView.dequeueReusableCell(withIdentifier:
-                        CellIdentifiers.additionalInfo.rawValue)
-                        as? AdditionalInfoTableViewCell {
-                    additionalCell.leftLabelName = "PRECIPITATION"
-                    additionalCell.leftLabelVolume =
-                        "\(round(weatherInfo?.current.rain?.the1H ?? 0.0 * 10.0) / 100.0)" +
-                        " cm".replacingOccurrences(of: ".", with: ",")
-                    additionalCell.rightLabelName = "PRESSURE"
-                    additionalCell.rightLabelVolume =
-                        "\(Double(weatherInfo?.current.pressure ?? 0) * 0.75)" + "mm Hg".replacingOccurrences(of: ".", with: ",")
-                    cell = additionalCell
-                }
+                    let model = AdditionalInfoCellModel(leftLabelName: "PRECIPITATION",
+                                                        leftLabelVolume: "\(round(weatherInfo?.current.rain?.the1H ?? 0.0 * 10.0) / 100.0)" +
+                                                        " cm".replacingOccurrences(of: ".", with: ","),
+                                                        rightLabelName: "PRESSURE",
+                                                        rightLabelVolume: "\(Double(weatherInfo?.current.pressure ?? 0) * 0.75)" +
+                                                            "mm Hg".replacingOccurrences(of: ".", with: ","))
+                    cell = tableView.dequeueReusableCell(withModel: model, for: indexPath)
             }
             if indexPath.row == dailyCount + 4 {
-                if let additionalCell =
-                    tableView.dequeueReusableCell(withIdentifier:
-                        CellIdentifiers.additionalInfo.rawValue)
-                        as? AdditionalInfoTableViewCell {
-                    additionalCell.leftLabelName = "VISABILITY"
-                    additionalCell.leftLabelVolume =
-                        "\((weatherInfo?.current.visibility ?? 0) / 1000) km".replacingOccurrences(of: ".", with: ",")
-                    additionalCell.rightLabelName = "UV INDEX"
-                    additionalCell.rightLabelVolume =
-                        "\(round((weatherInfo?.current.uvi ?? 0.0) * 10) / 10)".replacingOccurrences(of: ".", with: ",")
-                    cell = additionalCell
-                }
+                    let model = AdditionalInfoCellModel(leftLabelName: "VISABILITY",
+                                                        leftLabelVolume: "\((weatherInfo?.current.visibility ?? 0) / 1000) km".replacingOccurrences(of: ".", with: ","),
+                                                        rightLabelName: "UV INDEX",
+                                                        rightLabelVolume: "\(round((weatherInfo?.current.uvi ?? 0.0) * 10) / 10)".replacingOccurrences(of: ".", with: ","))
+                    cell = tableView.dequeueReusableCell(withModel: model, for: indexPath)
             }
         }
         return cell
     }
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         let dailyCount = weatherInfo?.daily.count ?? 0
-        if indexPath.section == 0 {
+        switch sectionsArray[indexPath.section] {
+        case .temperatureSection:
             if indexPath.row == 0 {
                 return UIScreen.main.bounds.height / 4
             }
             if indexPath.row == 1 {
                 return 40.0
             }
-        }
-        if indexPath.section == 1 {
+        case .fullInfoSection:
             if (0...dailyCount - 2).contains(indexPath.row) {
                 return 40.0
             } else {
                 return 75.0
             }
-        } else {
-            return 0.0
         }
+        return 0.0
     }
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         if scrollView.contentOffset.y >= 0.0 {

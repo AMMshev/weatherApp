@@ -9,24 +9,17 @@
 import Foundation
 
 struct Current: Codable {
-    let dt, sunrise, sunset: Int
-    let temp, feelsLike: Double
-    let pressure, humidity: Int
-    let dewPoint, uvi: Double
+    let dt, sunrise, sunset, pressure, humidity, windDeg: Int
+    let temp, feelsLike, dewPoint, uvi, windSpeed: Double
     let clouds, visibility: Int?
-    let windSpeed: Double
-    let windDeg: Int
     let weather: [Weather]
     let rain: Rain?
 
     enum CodingKeys: String, CodingKey {
-        case dt, sunrise, sunset, temp
+        case dt, sunrise, sunset, temp, pressure, humidity, uvi, clouds, visibility, weather, rain
         case feelsLike = "feels_like"
-        case pressure, humidity
         case dewPoint = "dew_point"
-        case uvi, clouds, visibility
         case windSpeed = "wind_speed"
         case windDeg = "wind_deg"
-        case weather, rain
     }
 }

@@ -12,6 +12,7 @@ import CoreLocation
 class ViewController: UIViewController {
     var locationManager = CLLocationManager()
     var weatherInfo: WeatherData?
+    var sectionsArray: [SectionType] = [.temperatureSection, .fullInfoSection]
     var headerHeightConstraint: NSLayoutConstraint?
     var headerView: CustomHeaderView?
     var tableViewNotsetted = false
@@ -29,19 +30,19 @@ class ViewController: UIViewController {
         tableView.showsVerticalScrollIndicator = false
         tableView.register(UINib(nibName: NibNames.todayHighLow.rawValue,
                                  bundle: nil),
-                           forCellReuseIdentifier: CellIdentifiers.todayHighLow.rawValue)
+                           forCellReuseIdentifier: String(describing: TodayHighLowTempCellModel.CellType.self))
         tableView.register(UINib(nibName: NibNames.dailyForecast.rawValue,
                                  bundle: nil),
-                           forCellReuseIdentifier: CellIdentifiers.dailyForecast.rawValue)
+                           forCellReuseIdentifier: String(describing: DailyForecastCellModel.CellType.self))
         tableView.register(UINib(nibName: NibNames.description.rawValue,
                                  bundle: nil),
-                           forCellReuseIdentifier: CellIdentifiers.description.rawValue)
+                           forCellReuseIdentifier: String(describing: DescriptionCellModel.CellType.self))
         tableView.register(UINib(nibName: NibNames.additionalInfo.rawValue,
                                  bundle: nil),
-                           forCellReuseIdentifier: CellIdentifiers.additionalInfo.rawValue)
+                           forCellReuseIdentifier: String(describing: AdditionalInfoCellModel.CellType.self))
         tableView.register(UINib(nibName: NibNames.temperature.rawValue,
                                  bundle: nil),
-                           forCellReuseIdentifier: CellIdentifiers.temperature.rawValue)
+                           forCellReuseIdentifier: String(describing: TemperatureCellModel.CellType.self))
         return tableView
     }()
     override func loadView() {

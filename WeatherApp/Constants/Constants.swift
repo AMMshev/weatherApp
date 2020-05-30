@@ -23,10 +23,5 @@ enum NibNames: String {
 }
 
 enum CellIdentifiers: String {
-    case additionalInfo = "additionalInfo"
-    case dailyForecast = "dailyForecast"
-    case dailyForecastCollection = "hourlyWeatherCell"
-    case description = "description"
-    case temperature = "temperatureCell"
-    case todayHighLow = "todayHighLowTemp"
+    case hourlyWeatherCell
 }

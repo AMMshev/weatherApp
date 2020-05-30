@@ -9,13 +9,10 @@
 import Foundation
 
 struct Hourly: Codable {
-    let dt: Int
+    let dt, windDeg: Int
     let temp, feelsLike: Double
-    let pressure, humidity: Int?
-    let dewPoint: Double?
-    let clouds: Int?
-    let windSpeed: Double?
-    let windDeg: Int
+    let pressure, humidity, clouds: Int?
+    let dewPoint, windSpeed: Double?
     let weather: [Weather]
     let rain: Rain?
 
